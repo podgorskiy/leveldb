@@ -5,7 +5,7 @@ project(leveldb)
 include_directories(./)
 include_directories(include)
 
-set(LEVELDB_DIR ${CMAKE_SOURCE_DIR})
+set(LEVELDB_DIR ${CMAKE_CURRENT_LIST_DIR})
 set(LEVELDB_DB_DIR ${LEVELDB_DIR}/db/)
 set(SOURCES_LVLDB 
 	${LEVELDB_DB_DIR}builder.cc
