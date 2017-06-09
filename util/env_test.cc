@@ -10,41 +10,44 @@
 namespace leveldb {
 
 static const int kDelayMicros = 100000;
+static const int kReadOnlyFileLimit = 4;
+static const int kMMapLimit = 4;
 
-class EnvPosixTest {
+class EnvTest {
  private:
   port::Mutex mu_;
   std::string events_;
 
  public:
   Env* env_;
-  EnvPosixTest() : env_(Env::Default()) { }
+  EnvTest() : env_(Env::Default()) { }
 };
 
 static void SetBool(void* ptr) {
-  *(reinterpret_cast<bool*>(ptr)) = true;
+  reinterpret_cast<port::AtomicPointer*>(ptr)->NoBarrier_Store(ptr);
 }
 
-TEST(EnvPosixTest, RunImmediately) {
-  bool called = false;
+TEST(EnvTest, RunImmediately) {
+  port::AtomicPointer called (NULL);
   env_->Schedule(&SetBool, &called);
-  Env::Default()->SleepForMicroseconds(kDelayMicros);
-  ASSERT_TRUE(called);
+  env_->SleepForMicroseconds(kDelayMicros);
+  ASSERT_TRUE(called.NoBarrier_Load() != NULL);
 }
 
-TEST(EnvPosixTest, RunMany) {
-  int last_id = 0;
+TEST(EnvTest, RunMany) {
+  port::AtomicPointer last_id (NULL);
 
   struct CB {
-    int* last_id_ptr;   // Pointer to shared slot
-    int id;             // Order# for the execution of this callback
+    port::AtomicPointer* last_id_ptr;   // Pointer to shared slot
+    uintptr_t id;             // Order# for the execution of this callback
 
-    CB(int* p, int i) : last_id_ptr(p), id(i) { }
+    CB(port::AtomicPointer* p, int i) : last_id_ptr(p), id(i) { }
 
     static void Run(void* v) {
       CB* cb = reinterpret_cast<CB*>(v);
-      ASSERT_EQ(cb->id-1, *cb->last_id_ptr);
-      *cb->last_id_ptr = cb->id;
+      void* cur = cb->last_id_ptr->NoBarrier_Load();
+      ASSERT_EQ(cb->id-1, reinterpret_cast<uintptr_t>(cur));
+      cb->last_id_ptr->Release_Store(reinterpret_cast<void*>(cb->id));
     }
   };
 
@@ -58,8 +61,9 @@ TEST(EnvPosixTest, RunMany) {
   env_->Schedule(&CB::Run, &cb3);
   env_->Schedule(&CB::Run, &cb4);
 
-  Env::Default()->SleepForMicroseconds(kDelayMicros);
-  ASSERT_EQ(4, last_id);
+  env_->SleepForMicroseconds(kDelayMicros);
+  void* cur = last_id.Acquire_Load();
+  ASSERT_EQ(4, reinterpret_cast<uintptr_t>(cur));
 }
 
 struct State {
@@ -76,7 +80,7 @@ static void ThreadBody(void* arg) {
   s->mu.Unlock();
 }
 
-TEST(EnvPosixTest, StartThread) {
+TEST(EnvTest, StartThread) {
   State state;
   state.val = 0;
   state.num_running = 3;
@@ -90,12 +94,12 @@ TEST(EnvPosixTest, StartThread) {
     if (num == 0) {
       break;
     }
-    Env::Default()->SleepForMicroseconds(kDelayMicros);
+    env_->SleepForMicroseconds(kDelayMicros);
   }
   ASSERT_EQ(state.val, 3);
 }
 
-}
+}  // namespace leveldb
 
 int main(int argc, char** argv) {
   return leveldb::test::RunAllTests();
