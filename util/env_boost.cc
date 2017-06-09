@@ -103,7 +103,7 @@ class PosixSequentialFile: public SequentialFile {
 
   virtual Status Read(size_t n, Slice* result, char* scratch) {
   Status s;
-#ifdef BSD
+#if defined BSD || defined _WIN32
   // fread_unlocked doesn't exist on FreeBSD
   size_t r = fread(scratch, 1, n, file_);
 #else

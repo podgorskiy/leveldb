@@ -31,13 +31,13 @@
 #ifndef STORAGE_LEVELDB_PORT_PORT_WIN_H_
 #define STORAGE_LEVELDB_PORT_PORT_WIN_H_
 
-#define snprintf _snprintf
-#define close _close
-#define fread_unlocked _fread_nolock
-
 #include <string>
-
 #include <stdint.h>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef min
+#undef max
+#undef small
 
 namespace leveldb {
 namespace port {
@@ -86,10 +86,12 @@ class CondVar {
   long waiting_;
   
   void * sem1_;
-  void * sem2_;
-  
-  
+  void * sem2_;  
 };
+
+typedef INIT_ONCE OnceType;
+#define LEVELDB_ONCE_INIT INIT_ONCE_STATIC_INIT
+extern void InitOnce(OnceType* once, void (*initializer)());
 
 // Storage for a lock-free pointer
 class AtomicPointer {
@@ -141,6 +143,8 @@ inline bool Snappy_Uncompress(const char* input, size_t length,
 inline bool GetHeapProfile(void (*func)(void*, const char*, int), void* arg) {
   return false;
 }
+
+uint32_t AcceleratedCRC32C(uint32_t crc, const char* buf, size_t size);
 
 }
 }

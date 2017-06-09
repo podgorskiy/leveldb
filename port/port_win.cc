@@ -30,7 +30,6 @@
 
 #include "port/port_win.h"
 
-#include <windows.h>
 #include <cassert>
 
 namespace leveldb {
@@ -119,6 +118,15 @@ void CondVar::SignalAll() {
   wait_mtx_.Unlock();
 }
 
+static BOOL CALLBACK CallInitInternal(PINIT_ONCE InitOnce, PVOID initializer, PVOID *lpContex) {
+	reinterpret_cast<void(*)()>(initializer)();
+	return TRUE;
+}
+
+void InitOnce(OnceType* once, void(*initializer)()) {
+	InitOnceExecuteOnce(once, CallInitInternal, initializer, NULL);
+}
+
 AtomicPointer::AtomicPointer(void* v) {
   Release_Store(v);
 }
@@ -139,6 +147,10 @@ void* AtomicPointer::NoBarrier_Load() const {
 
 void AtomicPointer::NoBarrier_Store(void* v) {
   rep_ = v;
+}
+
+uint32_t AcceleratedCRC32C(uint32_t crc, const char* buf, size_t size) {
+	return 0;
 }
 
 }
