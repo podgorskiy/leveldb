@@ -25,6 +25,7 @@ set(SOURCES_LVLDB
 	${LEVELDB_DB_DIR}write_batch.cc)
 set(LEVELDB_UTIL_DIR ${LEVELDB_DIR}/util/)
 set(SOURCES_LVLDB ${SOURCES_LVLDB}
+	${LEVELDB_UTIL_DIR}filter_policy.cc
 	${LEVELDB_UTIL_DIR}arena.cc
 	${LEVELDB_UTIL_DIR}cache.cc
 	${LEVELDB_UTIL_DIR}coding.cc
@@ -42,6 +43,7 @@ set(SOURCES_LVLDB ${SOURCES_LVLDB}
 	${LEVELDB_UTIL_DIR}win_logger.cc)
 set(LEVELDB_TABLE_DIR ${LEVELDB_DIR}/table/)
 set(SOURCES_LVLDB ${SOURCES_LVLDB}
+	${LEVELDB_TABLE_DIR}filter_block.cc
 	${LEVELDB_TABLE_DIR}block.cc
 	${LEVELDB_TABLE_DIR}block_builder.cc
 	${LEVELDB_TABLE_DIR}format.cc
