@@ -64,6 +64,7 @@ set(SOURCES_LVLDB ${SOURCES_LVLDB}
 else()
 set(SOURCES_LVLDB ${SOURCES_LVLDB}
 	${LEVELDB_PORT_DIR}port_posix.cc)
+	${LEVELDB_PORT_DIR}port_posix_sse.cc)
 endif()
 if(MSVC)
 	add_definitions(-DLEVELDB_PLATFORM_WIN32)
