@@ -24,6 +24,7 @@ set(SOURCES_LVLDB
 	${LEVELDB_DB_DIR}version_set.cc
 	${LEVELDB_DB_DIR}write_batch.cc)
 set(LEVELDB_UTIL_DIR ${LEVELDB_DIR}/util/)
+
 set(SOURCES_LVLDB ${SOURCES_LVLDB}
 	${LEVELDB_UTIL_DIR}filter_policy.cc
 	${LEVELDB_UTIL_DIR}arena.cc
@@ -39,8 +40,12 @@ set(SOURCES_LVLDB ${SOURCES_LVLDB}
 	${LEVELDB_UTIL_DIR}options.cc
 	${LEVELDB_UTIL_DIR}status.cc
 	${LEVELDB_UTIL_DIR}testharness.cc
-	${LEVELDB_UTIL_DIR}testutil.cc
+	${LEVELDB_UTIL_DIR}testutil.cc)
+if(MSVC)
+set(SOURCES_LVLDB ${SOURCES_LVLDB}
 	${LEVELDB_UTIL_DIR}win_logger.cc)
+else()
+endif()
 set(LEVELDB_TABLE_DIR ${LEVELDB_DIR}/table/)
 set(SOURCES_LVLDB ${SOURCES_LVLDB}
 	${LEVELDB_TABLE_DIR}filter_block.cc
@@ -53,8 +58,13 @@ set(SOURCES_LVLDB ${SOURCES_LVLDB}
 	${LEVELDB_TABLE_DIR}table_builder.cc
 	${LEVELDB_TABLE_DIR}two_level_iterator.cc)
 set(LEVELDB_PORT_DIR ${LEVELDB_DIR}/port/)
+if(MSVC)
 set(SOURCES_LVLDB ${SOURCES_LVLDB}
 	${LEVELDB_PORT_DIR}port_win.cc)
+else()
+set(SOURCES_LVLDB ${SOURCES_LVLDB}
+	${LEVELDB_PORT_DIR}port_posix.cc)
+endif()
 if(MSVC)
 	add_definitions(-DLEVELDB_PLATFORM_WIN32)
 else()
